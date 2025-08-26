@@ -1,3 +1,3 @@
 # DATASET
 
-https://app.roboflow.com/joshmiquel/dofus-resources-ewbm7/9
+https://app.roboflow.com/joshmiquel/dofus-water-well-m9wpx/1
