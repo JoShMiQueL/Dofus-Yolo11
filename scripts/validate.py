@@ -1,29 +1,36 @@
 import os
 
+from dotenv import load_dotenv
 from roboflow import Roboflow
 from ultralytics import YOLO
 
-if __name__ == "__main__":
-  # Use absolute path to avoid multiprocessing issues
-  print(os.getcwd())
+from config import (
+  CURRENT_PROJECT_FOLDER,
+  ROBOFLOW_PROJECT_ID,
+  ROBOFLOW_PROJECT_VERSION,
+  ROBOFLOW_PROJECT_WORKSPACE,
+  YOLO_VERSION,
+)
 
-  HOME = os.path.join(os.getcwd(), "training", "resources_model")
+if __name__ == "__main__":
+  load_dotenv()
+
+  HOME = os.path.join(os.getcwd(), CURRENT_PROJECT_FOLDER)
 
   os.makedirs(os.path.join(HOME, "datasets"), exist_ok=True)
   os.chdir(os.path.join(HOME, "datasets"))
 
-  print(os.getcwd())
+  if os.getenv("ROBOFLOW_API_KEY") is None:
+    raise ValueError("ROBOFLOW_API_KEY is not set. Please set it in the .env file.")
 
-  rf = Roboflow(api_key="your-api-key")
-  project = rf.workspace("joshmiquel").project("dofus-resources-5vl3i")
-  version = project.version(6)
-  dataset = version.download("yolov11")
+  rf = Roboflow(api_key=os.getenv("ROBOFLOW_API_KEY"))
+  project = rf.workspace(ROBOFLOW_PROJECT_WORKSPACE).project(ROBOFLOW_PROJECT_ID)
+  version = project.version(ROBOFLOW_PROJECT_VERSION)
+  dataset = version.download(YOLO_VERSION)
 
   os.chdir(HOME)
 
-  print(os.getcwd())
-
-  model = YOLO(os.path.join("runs", "detect", "v6", "weights", "best.pt"))
+  model = YOLO(os.path.join("runs", "detect", f"v{ROBOFLOW_PROJECT_VERSION}", "weights", "best.pt"))
   results = model.val(
     data=f"{dataset.location}/data.yaml",
     imgsz=640,
